@@ -32,7 +32,7 @@ class RateLimiter {
       if (this.requests[request].ip === req.ip)
         numbInvalidRequest++;
     }
-    if (numbInvalidRequest > 10)
+    if (numbInvalidRequest > 100)
       res.status(429).send('Too many Requests');
     else
       next();

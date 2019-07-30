@@ -5,7 +5,7 @@ var path = require('path');
 let app = express();
 let bodyParser = require('body-parser');
 
-let authRoute = require('./routes/auth');
+let adminRoute = require('./routes/admin');
 let recipeRoute = require('./routes/recipe');
 let recipeSubmissionRoute = require('./routes/recipeSubmission');
 let RateLimiter = require('./rateLimiter');
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 })
 
 // recipe route
-app.use(authRoute);
+app.use(adminRoute);
 app.use(recipeRoute);
 app.use(recipeSubmissionRoute);
 
