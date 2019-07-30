@@ -1,4 +1,4 @@
-let { RecipeModel, RecipeSubmissionModel } = require('../models/recipe.model');
+let { RecipeModel, RecipeSubmissionModel } = require('../models/recipes.model');
 let express = require('express');
 let router = express.Router();
 
@@ -21,7 +21,10 @@ router.post('/recipeSubmissions', (req, res) => {
 })
 
 router.get('/recipeSubmissions', (req, res) => {
-  
+  const userId =
+    RecipeModel.find({ type: req.query.cuisineType }, (err, docs) => {
+      res.send(docs);
+    });
 })
 
 module.exports = router;
