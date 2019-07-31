@@ -16,7 +16,11 @@ const getAdmin = async (userId) => {
 router.get('/admin', async (req, res) => {
   const { userId } = req.query;
   const isAdmin = await getAdmin(userId);
-  (isAdmin ? res.status(200).send(true) : res.status(200).send(false));
+  if (isAdmin) {
+    AdminModel.find({}, (err, docs) => {
+      res.send(docs);
+    })
+  }
 });
 
 // Allows you to create new Admin if you are admin
