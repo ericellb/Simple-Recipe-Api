@@ -12,10 +12,10 @@ let recipeRoute = require('./routes/recipe');
 let recipeSubmissionRoute = require('./routes/recipeSubmission');
 let RateLimiter = require('./rateLimiter');
 
-const { server } = require('../config');
-const { database } = require('../config');
-const { user } = require('../config');
-const { password } = require('../config');
+const server = process.env.MONGODB_URI;
+const database = process.env.MONGODB_DB;
+const user = process.env.MONGODB_USER;
+const password = process.env.MONGODB_PASSWORD;
 
 mongoose.connect(`mongodb+srv://${user}:${password}@${server}/${database}`);
 var connection = mongoose.connection;
