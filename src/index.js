@@ -17,8 +17,6 @@ const database = process.env.MONGODB_DB;
 const user = process.env.MONGODB_USER;
 const password = process.env.MONGODB_PASSWORD;
 
-console.log(`${process.env.MONGODB_URI} - ${process.env.MONGODB_DB} - ${process.env.MONGODB_USER}`);
-
 mongoose.connect(`mongodb+srv://${user}:${password}@${server}/${database}`, { useNewUrlParser: true });
 var connection = mongoose.connection;
 connection.on('connected', () => {
