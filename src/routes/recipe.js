@@ -1,18 +1,17 @@
 let { RecipeModel } = require('../models/recipes.model');
+let _ = require('lodash');
 let express = require('express');
 let router = express.Router();
 
 router.get('/recipes', (req, res) => {
-  // Return recipes of specific cuisineType
-  if (req.query.cuisineType) {
-    RecipeModel.find({ type: req.query.cuisineType }, (err, docs) => {
-      res.status(200).send(docs);
-    });
-  }
-  // Return recipes of specific foodType
-  else if (req.query.foodType) {
-    RecipeModel.find({ type: req.query.foodType }, (err, docs) => {
-      res.status(200).send(docs);
+  // Return recipes of specific filter query
+  if (req.query.foodFilter) {
+    let from = req.query.from;
+    let to = req.query.to;
+    from = (from === undefined ? 0 : from)
+    to = (to === undefined ? from + 12 : to)
+    RecipeModel.find({ type: req.query.foodFilter }, (err, docs) => {
+      res.status(200).send(docs.slice(from, to));
     });
   }
   // Return 1 recipe with given ID
