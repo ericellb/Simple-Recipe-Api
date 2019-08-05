@@ -5,7 +5,11 @@ let RecipeSchema = new mongoose.Schema({
   description: String,
   src: String,
   link: String,
-  type: String
+  type: String,
+  extra: String,
+  numbRatings: Number,
+  ratingAvg: Number,
+  ratingSum: Number
 });
 
 module.exports = {

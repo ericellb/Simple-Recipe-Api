@@ -12,7 +12,13 @@ let UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true
-  }
+  },
+  ratings: [
+    {
+      id: String,
+      rating: Number
+    }
+  ]
 });
 
 module.exports = {

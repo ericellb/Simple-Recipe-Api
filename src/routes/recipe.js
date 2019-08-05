@@ -1,4 +1,5 @@
 let { RecipeModel } = require('../models/recipes.model');
+let { UserModel } = require('../models/users.model');
 let _ = require('lodash');
 let express = require('express');
 let router = express.Router();
@@ -29,8 +30,53 @@ router.get('/recipes', (req, res) => {
     });
   }
   else {
-    res.send('Please specify either a param of id, foodType, cuisineType or dictionary')
+    res.status(400).send('Please specify either a param of id, foodType, cuisineType or dictionary')
   }
 });
+
+router.patch('/recipes', async (req, res) => {
+  const { recipeId, rating, userId } = req.query;
+  if (recipeId && rating && userId) {
+    // Check if user already rated
+    docs = await UserModel.findOne({ userId: userId });
+    let userRatings = docs.ratings;
+
+    let foundRating = false;
+    let prevUserRating = 0;
+    userRatings.forEach(userRating => {
+      if (userRating._id == recipeId) {
+        foundRating = true;
+        prevUserRating = userRating.rating;
+        userRating.rating = rating;
+      }
+    })
+
+    // If no found rating, push new entry in
+    if (!foundRating)
+      userRatings.push({ _id: recipeId, rating: rating });
+
+    docs = await UserModel.findOneAndUpdate({ userId: userId }, { ratings: userRatings }, { new: true, useFindAndModify: false });
+
+    docs = await RecipeModel.findOne({ _id: recipeId });
+
+    // If user already rated, negate previous rating before adding new one
+    let newUserRating = parseInt(rating) - parseInt(prevUserRating);
+    let numbRatingInc = 1;
+    if (foundRating)
+      numbRatingInc = 0;
+
+    let newNumbRatings = getNumber(docs.numbRatings) + numbRatingInc;
+    let newRatingSum = getNumber(docs.ratingSum) + parseInt(newUserRating);
+    let newRatingAvg = newRatingSum / newNumbRatings;
+    docs = await RecipeModel.findOneAndUpdate({ _id: recipeId }, { numbRatings: newNumbRatings, ratingAvg: newRatingAvg, ratingSum: newRatingSum }, { new: true, useFindAndModify: false });
+    res.status(200).send(docs);
+  }
+  else
+    res.status(400).send('Please specify both an ID and Rating');
+});
+
+getNumber = (number) => {
+  return isNaN(parseInt(number)) ? 0 : parseInt(number);
+}
 
 module.exports = router;
