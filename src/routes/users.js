@@ -25,14 +25,17 @@ router.get('/users', async (req, res) => {
     res.status(401).send('Non authorized endpoint');
 })
 
-router.post('/users', (req, res) => {
+router.post('/users', async (req, res) => {
   const { userId, name, email } = req.query;
   if (userId || name || email) {
-    UserModel.collection.insertOne({
-      userId: userId,
-      name: name,
-      email: email
-    });
+    const user = await UserModel.findOne({ userId: userId });
+    if (!user) {
+      UserModel.collection.insertOne({
+        userId: userId,
+        name: name,
+        email: email
+      })
+    }
     res.status(200).send('Success');
   }
   else {

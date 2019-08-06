@@ -38,38 +38,45 @@ router.patch('/recipes', async (req, res) => {
   const { recipeId, rating, userId } = req.query;
   if (recipeId && rating && userId) {
     // Check if user already rated
-    docs = await UserModel.findOne({ userId: userId });
-    let userRatings = docs.ratings;
+    user = await UserModel.findOne({ userId: userId });
+    if (user !== null) {
+      let userRatings = user.ratings;
 
-    let foundRating = false;
-    let prevUserRating = 0;
-    userRatings.forEach(userRating => {
-      if (userRating._id == recipeId) {
-        foundRating = true;
-        prevUserRating = userRating.rating;
-        userRating.rating = rating;
+      let foundRating = false;
+      let prevUserRating = 0;
+      userRatings.forEach(userRating => {
+        if (userRating._id == recipeId) {
+          foundRating = true;
+          prevUserRating = userRating.rating;
+          userRating.rating = rating;
+        }
+      })
+
+      // If no found rating, push new entry in
+      if (!foundRating)
+        userRatings.push({ _id: recipeId, rating: rating });
+
+      // Check if RecipeId valid before updating user
+      let recipe = await RecipeModel.findOne({ _id: recipeId });
+      if (recipe !== null) {
+
+        await UserModel.findOneAndUpdate({ userId: userId }, { ratings: userRatings }, { new: true, useFindAndModify: false });
+
+        // If user already rated, negate previous rating before adding new one
+        let newUserRating = parseInt(rating) - parseInt(prevUserRating);
+        let numbRatingInc = 1;
+        if (foundRating)
+          numbRatingInc = 0;
+
+        let newNumbRatings = getNumber(recipe.numbRatings) + numbRatingInc;
+        let newRatingSum = getNumber(recipe.ratingSum) + parseInt(newUserRating);
+        let newRatingAvg = newRatingSum / newNumbRatings;
+        let doc = await RecipeModel.findOneAndUpdate({ _id: recipeId }, { numbRatings: newNumbRatings, ratingAvg: newRatingAvg, ratingSum: newRatingSum }, { new: true, useFindAndModify: false });
+        res.status(200).send(doc);
       }
-    })
-
-    // If no found rating, push new entry in
-    if (!foundRating)
-      userRatings.push({ _id: recipeId, rating: rating });
-
-    docs = await UserModel.findOneAndUpdate({ userId: userId }, { ratings: userRatings }, { new: true, useFindAndModify: false });
-
-    docs = await RecipeModel.findOne({ _id: recipeId });
-
-    // If user already rated, negate previous rating before adding new one
-    let newUserRating = parseInt(rating) - parseInt(prevUserRating);
-    let numbRatingInc = 1;
-    if (foundRating)
-      numbRatingInc = 0;
-
-    let newNumbRatings = getNumber(docs.numbRatings) + numbRatingInc;
-    let newRatingSum = getNumber(docs.ratingSum) + parseInt(newUserRating);
-    let newRatingAvg = newRatingSum / newNumbRatings;
-    docs = await RecipeModel.findOneAndUpdate({ _id: recipeId }, { numbRatings: newNumbRatings, ratingAvg: newRatingAvg, ratingSum: newRatingSum }, { new: true, useFindAndModify: false });
-    res.status(200).send(docs);
+      else res.status(400).send('Invalid RecipeID');
+    }
+    else res.status(400).send('Invalid UserId');
   }
   else
     res.status(400).send('Please specify both an ID and Rating');
